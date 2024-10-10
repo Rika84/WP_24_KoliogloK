@@ -30,22 +30,23 @@ public class lab1 extends JFrame {
     private JButton button_divide = new JButton("/");
     private JButton button_multiply = new JButton("*");
     private JButton button_delete = new JButton("<-"); // кнопка удаления - przycisk usuwania
-    private JButton button_equal = new JButton("=");
+    private JButton button_equal = new JButton("=");   // кнопка равно - przycisk wyniku
 
     // текстовое поле - pole tekstowe
     private JTextField textScreen;
 
     // строка для хранения выражения - zmienna do przechowywania wyrażenia
     private String expression = "";
+    private boolean isResultDisplayed = false; // флаг для отслеживания, был ли результат на экране - flaga sprawdzająca, czy wynik jest wyświetlany
 
     public lab1() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(300, 400);
 
-        // основной панель - panel główny
+        // основная панель - panel główny
         JPanel maiPanel = new JPanel(new BorderLayout());
         textScreen = new JTextField();
-        maiPanel.add("North", textScreen);
+        maiPanel.add("North", textScreen);  // добавляем текстовое поле сверху - dodajemy pole tekstowe na górze
 
         // панель кнопок - panel przycisków
         JPanel buttonPanel = new JPanel(new GridLayout(5, 4));
@@ -69,7 +70,7 @@ public class lab1 extends JFrame {
         buttonPanel.add(button_plus);  // кнопка сложения - przycisk dodawania
         buttonPanel.add(button_equal);  // кнопка равно - przycisk wyniku
 
-        maiPanel.add("Center", buttonPanel);
+        maiPanel.add("Center", buttonPanel); // добавляем панель кнопок в центр - dodajemy panel przycisków w centrum
         add(maiPanel);
 
         // обработчики событий для кнопок - obsługa zdarzeń dla przycisków
@@ -99,6 +100,7 @@ public class lab1 extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 textScreen.setText("");
                 expression = "";  // очистка выражения - czyszczenie wyrażenia
+                isResultDisplayed = false;  // сброс флага результата - resetowanie flagi wyniku
             }
         });
 
@@ -106,21 +108,21 @@ public class lab1 extends JFrame {
         button_delete.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (expression.length() > 0) {
-                    // Проверяем, есть ли пробелы перед последним символом
+                    // Проверяем, есть ли пробелы перед последним символом (то есть оператор с пробелами) - sprawdzamy, czy są odstępy przed ostatnim znakiem (czyli operator z odstępami)
                     if (expression.endsWith(" ")) {
-                        // Удаляем последний оператор и пробелы
+                        // Удаляем последний оператор и пробелы - usuwamy ostatni operator i odstępy
                         expression = expression.substring(0, expression.length() - 3);
                     } else {
-                        // Удаляем последний символ
+                        // Удаляем последний символ - usuwamy ostatni znak
                         expression = expression.substring(0, expression.length() - 1);
                     }
-                    // Обновляем текстовое поле сразу после изменения
+                    // Обновляем текстовое поле сразу после изменения - aktualizujemy pole tekstowe po zmianie
                     textScreen.setText(expression);
                 }
             }
         });
 
-        setVisible(true);
+        setVisible(true);  // делаем окно видимым - ustawiamy okno jako widoczne
     }
 
     // обработчик для числовых кнопок - obsługa przycisków numerycznych
@@ -133,6 +135,11 @@ public class lab1 extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
+            if (isResultDisplayed) {
+                // Если результат уже был показан и пользователь вводит новое число, мы начинаем новое выражение - Jeśli wynik został wyświetlony, zaczynamy nowe wyrażenie
+                expression = "";
+                isResultDisplayed = false;
+            }
             expression += value;  // добавление числа к выражению - dodawanie liczby do wyrażenia
             textScreen.setText(expression);  // обновление экрана - aktualizacja ekranu
         }
@@ -148,7 +155,21 @@ public class lab1 extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            expression += " " + op + " ";  // добавление оператора к выражению с пробелами - dodawanie operatora z odstępami
+            if (isResultDisplayed) {
+                // Если был показан результат, продолжаем работать с ним - Jeśli wynik został wyświetlony, kontynuujemy pracę z nim
+                isResultDisplayed = false;
+            }
+            if (expression.isEmpty()) {
+                // Игнорируем операторы, если ничего нет в выражении - Ignorujemy operatory, jeśli wyrażenie jest puste
+                return;
+            }
+            if (expression.endsWith(" ")) {
+                // Если уже есть оператор в конце, заменяем его на новый - Jeśli operator już istnieje na końcu, zamieniamy go na nowy
+                expression = expression.substring(0, expression.length() - 3) + " " + op + " ";
+            } else {
+                // Добавляем оператор, если его еще нет в конце - Dodajemy operator, jeśli go jeszcze nie ma na końcu
+                expression += " " + op + " ";
+            }
             textScreen.setText(expression);  // обновление экрана - aktualizacja ekranu
         }
     }
@@ -156,6 +177,15 @@ public class lab1 extends JFrame {
     // метод для выполнения расчета с учетом приоритета операций - metoda obliczająca z uwzględnieniem priorytetów operatorów
     private void calculate() {
         try {
+            // Если выражение заканчивается на оператор, удаляем этот оператор - Jeśli wyrażenie kończy się operatorem, usuwamy ten operator
+            if (expression.endsWith(" ")) {
+                expression = expression.substring(0, expression.length() - 3);
+            }
+
+            if (expression.isEmpty()) {
+                return;  // Если после этого выражение пустое, ничего не делаем - Jeśli po tym wyrażenie jest puste, nic nie robimy
+            }
+
             String[] tokens = expression.split(" ");
             // первый проход: обработка умножения и деления - pierwszy krok: obsługa mnożenia i dzielenia
             for (int i = 0; i < tokens.length; i++) {
@@ -197,9 +227,11 @@ public class lab1 extends JFrame {
 
             textScreen.setText(String.valueOf(result));  // отображение результата на экране - wyświetlanie wyniku na ekranie
             expression = String.valueOf(result);  // обновление выражения результатом - aktualizacja wyrażenia wynikiem
+            isResultDisplayed = false;  // Сбрасываем флаг, чтобы пользователь мог продолжить работу с результатом - Resetujemy flagę, aby użytkownik mógł kontynuować pracę z wynikiem
         } catch (Exception e) {
             textScreen.setText("Error");  // вывод ошибки - wyświetlenie błędu
             expression = "";
+            isResultDisplayed = false;  // сброс флага результата - resetowanie flagi wyniku
         }
     }
 
