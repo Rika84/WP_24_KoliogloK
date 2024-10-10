@@ -106,7 +106,15 @@ public class lab1 extends JFrame {
         button_delete.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (expression.length() > 0) {
-                    expression = expression.substring(0, expression.length() - 1);  // удаление последнего символа - usuwanie ostatniego znaku
+                    // Проверяем, есть ли пробелы перед последним символом
+                    if (expression.endsWith(" ")) {
+                        // Удаляем последний оператор и пробелы
+                        expression = expression.substring(0, expression.length() - 3);
+                    } else {
+                        // Удаляем последний символ
+                        expression = expression.substring(0, expression.length() - 1);
+                    }
+                    // Обновляем текстовое поле сразу после изменения
                     textScreen.setText(expression);
                 }
             }
@@ -140,7 +148,7 @@ public class lab1 extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            expression += " " + op + " ";  // добавление оператора к выражению - dodawanie operatora do wyrażenia
+            expression += " " + op + " ";  // добавление оператора к выражению с пробелами - dodawanie operatora z odstępami
             textScreen.setText(expression);  // обновление экрана - aktualizacja ekranu
         }
     }
